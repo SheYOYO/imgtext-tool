@@ -1,0 +1,20 @@
+# Python 运行产物
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# 程序输出 / 调试产物
+imgtext_tool/_test_output/
+imgtext_tool/_bench_out/
+
+# 打包产物
+dist/
+build/
+*.spec
+
+# 本机工作区数据（不要上传）
+.workbuddy/
+
+# 测试素材截图（非代码，按需自行添加）
+Screenshot_*.jpg
