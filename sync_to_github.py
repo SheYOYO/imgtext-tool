@@ -150,7 +150,9 @@ def api(path, token, method="GET", payload=None):
 
 
 def git(*args, timeout=120):
-    p = subprocess.run([GIT, "-C", HERE] + list(args), capture_output=True, timeout=timeout,
+    # core.quotepath=false：否则中文文件名会被转义成 \345\220\214… 这样的八进制串
+    p = subprocess.run([GIT, "-C", HERE, "-c", "core.quotepath=false"] + list(args),
+                       capture_output=True, timeout=timeout,
                        env={**os.environ, "GIT_TERMINAL_PROMPT": "0", "GCM_INTERACTIVE": "never"})
     return p.returncode, (p.stdout + p.stderr).decode("utf-8", "replace").strip()
 
@@ -216,15 +218,19 @@ def main():
     print(f"[2/5] 本地 {len(files)} 个文件，远端 {len(remote)} 个文件，正在比对…")
 
     changed, added, deleted = [], [], []
+    bad = []
     for rel, full in files.items():
         sha = blob_sha(full)
         if not sha:
+            bad.append(rel)
             continue
         if rel not in remote:
             added.append(rel)
         elif remote[rel] != sha:
             changed.append(rel)
     deleted = [p for p in remote if p not in files]
+    if bad:
+        print(f"[!] 有 {len(bad)} 个文件读不到，已跳过：{bad[:5]}")
 
     if not (added or changed or deleted):
         print("[3/5] 没有变化，远端已是最新。")
