@@ -293,9 +293,10 @@ def main():
     os.makedirs(d, exist_ok=True)
     with open(os.path.join(d, BRANCH), "w", encoding="ascii") as f:
         f.write(new_sha + "\n")
-    rc, out = git("reset", "--hard", new_sha)
-    if rc != 0:
-        rc, out = git("reset", "--mixed", new_sha)
+    # 只挪指针 + 刷新索引，绝不 checkout 工作区
+    # （reset --hard 会按行尾规则重写文件字节，导致下次比对又"有修改"）
+    git("update-ref", f"refs/heads/{BRANCH}", new_sha)
+    git("read-tree", new_sha)
     rc, out = git("status", "-sb")
     print("       " + out)
 
